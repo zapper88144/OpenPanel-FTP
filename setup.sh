@@ -39,13 +39,39 @@ open_ports() {
 if check_openpanel_installed; then
   echo "OpenPanel is installed. Proceeding with Docker container setup and port opening."
 
-  # Run the Docker container
+  # create dir
+  mkdir -p /etc/openpanel/ftp/users/
+
+  # run the Docker container
   run_docker_container
+
+  # if container started, we continue..
+  if docker ps --filter "name=openadmin_ftp" --filter "status=running" | grep -q openadmin_ftp; then
+  
+    # OpenPanel module
+    cp module/ftp.py /usr/local/panel/modules/ftp.py
+    cp module/ftp.html /usr/local/panel/templates/ftp.html
+  
+    # OpenAdmin extension
+    cp module/admin/ftp.py /usr/local/admin/modules/ftp.py
+    cp module/admin/ftp.html /usr/local/admin/templates/ftp.html
+  
+    # reload services
+    service admin reload
+    service panel reload
+    
+  else
+    # If the container is not running, do B
+    echo "ERROR: openadmin_ftp container is not running. Exiting..."
+    docker stop openadmin_ftp
+    docker rm openadmin_ftp
+    exit 1
+  fi
 
   # Open the required ports
   open_ports
 
-  echo "Docker container started and ports opened."
+  echo "SUCCESS: FTP is running and enabled for all OpenPanel users"
 else
-  echo "OpenPanel is not installed. Exiting."
+  echo "ERROR: OpenPanel is not installed. To run a standalone FTP without OpenPanel, please read the README.md file."
 fi
