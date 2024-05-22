@@ -42,6 +42,7 @@ open_ports() {
 #cleanup
 cleanup() {
   rm file.zip
+  rm -rf OpenPanel-FTP-master
 } 
 
 
