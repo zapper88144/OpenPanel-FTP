@@ -9,7 +9,7 @@ This image can be used in two ways:
 - as a standalone FTP server
 
 
-### OpenPanel Module
+#### OpenPanel Module
 
 To install FTP on OpenPanel server run the following command:
 ```bash
@@ -22,7 +22,7 @@ opencli ftp-add <NEW_USERNAME> <NEW_PASSWORD> <FOLDER> <OPENPANEL_USERNAME>
 ```
 
 
-## standalone Docker
+#### standalone Docker
 
 Installation:
 ```
