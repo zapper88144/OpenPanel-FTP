@@ -14,48 +14,69 @@ grep '/ftp/' /etc/passwd | cut -d':' -f1 | xargs -r -n1 deluser
 #OR
 # user|password||10000|82
 
-#Default user 'ftp' with password 'alpineftp'
+#no default user
 
-if [ -z "$USERS" ]; then
-  USERS="alpineftp|alpineftp"
-fi
-
-for i in $USERS ; do
-  NAME=$(echo $i | cut -d'|' -f1)
-  GROUP=$NAME
-  PASS=$(echo $i | cut -d'|' -f2)
-  FOLDER=$(echo $i | cut -d'|' -f3)
-  UID=$(echo $i | cut -d'|' -f4)
-  # Add group handling
-  GID=$(echo $i | cut -d'|' -f5)
-
-  if [ -z "$FOLDER" ]; then
-    FOLDER="/ftp/$NAME"
+# Function to determine if a hostname is a FQDN
+is_fqdn() {
+  if [[ $1 =~ ^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+    return 0
+  else
+    return 1
   fi
+}
 
-  if [ ! -z "$UID" ]; then
-    UID_OPT="-u $UID"
-    if [ -z "$GID" ]; then
-      GID=$UID
-    fi
-    #Check if the group with the same ID already exists
-    GROUP=$(getent group $GID | cut -d: -f1)
-    if [ ! -z "$GROUP" ]; then
-      GROUP_OPT="-G $GROUP"
-    elif [ ! -z "$GID" ]; then
-      # Group don't exist but GID supplied
-      addgroup -g $GID $NAME
-      GROUP_OPT="-G $NAME"
-    fi
-  fi
+# Function to get the server's IP address
+get_ip_address() {
+  hostname -I | awk '{print $1}'
+}
 
-  echo -e "$PASS\n$PASS" | adduser -h $FOLDER -s /sbin/nologin $UID_OPT $GROUP_OPT $NAME
-  mkdir -p $FOLDER
-  chown $NAME:$GROUP $FOLDER
-  unset NAME PASS FOLDER UID GID
-done
+# Function to read users from users.list files and create them
+create_users() {
+  USER_LIST_FILES=$(find /etc/openpanel/ftp/users/ -name 'users.list')
 
+  for USER_LIST_FILE in $USER_LIST_FILES; do
+    BASE_DIR=$(dirname "$USER_LIST_FILE")
+    while IFS='|' read -r NAME PASS FOLDER UID GID; do
+      [ -z "$NAME" ] && continue  # Skip empty lines
 
+      GROUP=$NAME
+
+      if [ -z "$FOLDER" ]; then
+        FOLDER="/ftp/$NAME"
+      fi
+
+      # Ensure the folder starts with /home and matches the base directory where users.list is found
+      if [[ $FOLDER != /home/* ]] || [[ ! $FOLDER == "$BASE_DIR"* ]]; then
+        echo "Skipping user $NAME: folder $FOLDER does not match base directory $BASE_DIR or does not start with /home"
+        continue
+      fi
+
+      if [ ! -z "$UID" ]; then
+        UID_OPT="-u $UID"
+        if [ -z "$GID" ]; then
+          GID=$UID
+        fi
+        GROUP=$(getent group $GID | cut -d: -f1)
+        if [ ! -z "$GROUP" ]; then
+          GROUP_OPT="-G $GROUP"
+        elif [ ! -z "$GID" ]; then
+          addgroup -g $GID $NAME
+          GROUP_OPT="-G $NAME"
+        fi
+      fi
+
+      echo -e "$PASS\n$PASS" | adduser -h $FOLDER -s /sbin/nologin $UID_OPT $GROUP_OPT $NAME
+      mkdir -p $FOLDER
+      chown $NAME:$GROUP $FOLDER
+      unset NAME PASS FOLDER UID GID GROUP UID_OPT GROUP_OPT
+    done < "$USER_LIST_FILE"
+  done
+}
+
+# Call the function to create users
+create_users
+
+# Set default passive mode port range if not specified
 if [ -z "$MIN_PORT" ]; then
   MIN_PORT=21000
 fi
@@ -64,6 +85,17 @@ if [ -z "$MAX_PORT" ]; then
   MAX_PORT=21010
 fi
 
+# Determine the address if not provided
+if [ -z "$ADDRESS" ]; then
+  HOSTNAME=$(hostname)
+  if is_fqdn "$HOSTNAME"; then
+    ADDRESS="$HOSTNAME"
+  else
+    ADDRESS=$(get_ip_address)
+  fi
+fi
+
+# Configure address and TLS options
 if [ ! -z "$ADDRESS" ]; then
   ADDR_OPT="-opasv_address=$ADDRESS"
 fi
