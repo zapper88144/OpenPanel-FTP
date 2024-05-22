@@ -4,7 +4,11 @@ Small and flexible docker image with vsftpd server + OpenPanel module to allow u
 
 ## Usage
 
-wget and bash setup.sh
+This image can be used in two ways:
+- as an FTP module for OpenPanel
+- as a standalone FTP server
+
+
 
 ```
 ufw allow 21 &&   
