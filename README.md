@@ -1,15 +1,21 @@
-# docker-alpine-ftp-server
-[![Docker Stars](https://img.shields.io/docker/stars/delfer/alpine-ftp-server.svg)](https://hub.docker.com/r/delfer/alpine-ftp-server/) [![Docker Pulls](https://img.shields.io/docker/pulls/delfer/alpine-ftp-server.svg)](https://hub.docker.com/r/delfer/alpine-ftp-server/) [![Docker Automated build](https://img.shields.io/docker/automated/delfer/alpine-ftp-server.svg)](https://hub.docker.com/r/delfer/alpine-ftp-server/) [![Docker Build Status](https://img.shields.io/docker/build/delfer/alpine-ftp-server.svg)](https://hub.docker.com/r/delfer/alpine-ftp-server/) [![MicroBadger Layers](https://img.shields.io/microbadger/layers/delfer/alpine-ftp-server.svg)](https://hub.docker.com/r/delfer/alpine-ftp-server/) [![MicroBadger Size](https://img.shields.io/microbadger/image-size/delfer/alpine-ftp-server.svg)](https://hub.docker.com/r/delfer/alpine-ftp-server/)  
-Small and flexible docker image with vsftpd server
+# FTP module for [OpenPanel](https://openpanel.co)
+
+Small and flexible docker image with vsftpd server + OpenPanel module to allow users to manage ftp sub-users.
 
 ## Usage
+
+wget and bash setup.sh
+
 ```
+ufw allow 21 &&   
+
 docker run -d \
     -p "21:21" \
     -p 21000-21010:21000-21010 \
-    -e USERS="one|1234" \
-    -e ADDRESS=ftp.site.domain \
-    delfer/alpine-ftp-server
+    --restart=always \
+    --name=openadmin_ftp \
+    --memory="1g" --cpus="1" \
+    openpanel/ftp
 ```
 
 ## Configuration
