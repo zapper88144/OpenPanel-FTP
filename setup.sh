@@ -19,13 +19,16 @@ run_docker_container() {
     -p 21000-21010:21000-21010 \
     --restart=always \
     --name=openadmin_ftp \
+    -v /home:/home \
+    -v /etc/openpanel/ftp/users:/etc/openpanel/ftp/users
     --memory="1g" --cpus="1" \
     openpanel/ftp
 }
 
 # Function to open ports using ufw
 open_ports() {
-  ufw allow 21/tcp
+  ufw allow 21/tcp    -v /home:/home \
+    -v /etc/openpanel/ftp/users:/etc/openpanel/ftp/users
   for port in $(seq 21000 21010); do
     ufw allow $port/tcp
   done
