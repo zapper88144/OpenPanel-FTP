@@ -31,8 +31,7 @@ run_docker_container() {
 
 # open ports
 open_ports() {
-  ufw allow 21/tcp    -v /home:/home \
-    -v /etc/openpanel/ftp/users:/etc/openpanel/ftp/users
+  ufw allow 21/tcp
   for port in $(seq 21000 21010); do
     ufw allow $port/tcp
   done
