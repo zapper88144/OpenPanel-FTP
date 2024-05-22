@@ -3,12 +3,14 @@
 # this script should be run only on servers that have OpenPanel installed.
 # to use OpenPanel-FTP as a standalone ftp server, check the readme
 
-config_file="/usr/local/panel/conf/panel.config"
-
+PANEL_CONFIG="/usr/local/panel/conf/panel.config"
+GIT_URL="https://github.com/stefanpejcic/OpenPanel-FTP/archive/refs/heads/master.zip"
+ETC_DIR="/etc/openpanel/ftp/users/"
+TEMP_DIR="openpanel-ftp"
 
 # OpenPanel?
 check_openpanel_installed() {
-  if [ -f $config_file ]; then
+  if [ -f $PANEL_CONFIG ]; then
     return 0
   else
     return 1
@@ -38,37 +40,67 @@ open_ports() {
   ufw reload
 }
 
+#cleanup
+cleanup() {
+  rm file.zip
+  rm -rf $TEMP_DIR
+} 
+
+
+
 # Main script
 if check_openpanel_installed; then
   echo "OpenPanel is installed. Proceeding with Docker container setup and port opening."
 
-  # create dir
-  mkdir -p /etc/openpanel/ftp/users/
+  echo "Downloading the latest openpanel/ftp image and module."  
 
-  # run the container
-  echo "Starting docker container.."
-  run_docker_container
+  # create dirs
+  mkdir -p $TEMP_DIR
+  mkdir -p $ETC_DIR
+
+  # download from github
+  wget $GIT_URL -O file.zip
+  unzip file.zip -d $TEMP_DIR  
+
+  echo "Building docker image.."
+  # build image for now, later download from dockerhub
+  cd $TEMP_DIR && docker build . -t "openpanel/ftp"
+  
+  # chech if image exists
+  if docker images | grep -q "openpanel/ftp"; then
+      # run the container
+      echo "Starting docker container.."
+      run_docker_container
+  else
+    # Oops!
+    echo ""
+    echo "ERROR: The Docker image 'openpanel/ftp' does not exist. Exiting..."
+    echo ""
+    
+    cleanup
+  fi
+
 
   # if container started, we continue..
   if docker ps --filter "name=openadmin_ftp" --filter "status=running" | grep -q openadmin_ftp; then
 
     echo "Copying OpenPanel module and OpenAdmin extension files.."
     # OpenPanel module
-    cp module/ftp.py /usr/local/panel/modules/ftp.py
-    cp module/ftp.html /usr/local/panel/templates/ftp.html
+    cp $TEMP_DIR/module/ftp.py /usr/local/panel/modules/ftp.py
+    cp $TEMP_DIR/module/ftp.html /usr/local/panel/templates/ftp.html
   
     # OpenAdmin extension
-    cp module/admin/ftp.py /usr/local/admin/modules/ftp.py
-    cp module/admin/ftp.html /usr/local/admin/templates/ftp.html
+    cp $TEMP_DIR/module/admin/ftp.py /usr/local/admin/modules/ftp.py
+    cp $TEMP_DIR/module/admin/ftp.html /usr/local/admin/templates/ftp.html
   
   # Check if 'ftp' is in the enabled_modules line
-  if grep -q "^enabled_modules=.*ftp" "$config_file"; then
-    # FTP already exists in enabled modules!
+  if grep -q "^enabled_modules=.*ftp" "$PANEL_CONFIG"; then
+    # ftp already exists in enabled modules!
     echo "FTP Module is already enabled in OpenPanel configuration."
   else
-    # nope
+    # nope, add it!
     echo "Adding FTP to enabled_modules for OpenPanel."
-    sed -i '/^enabled_modules=/ s/$/,ftp/' "$config_file"
+    sed -i '/^enabled_modules=/ s/$/,ftp/' "$PANEL_CONFIG"
   fi
     
   
@@ -87,8 +119,12 @@ if check_openpanel_installed; then
     exit 1
   fi
 
-  # Open the required ports
+  # ufw
   open_ports
+
+  #rm
+  cleanup
+
   echo ""
   echo "SUCCESS: FTP is now running and enabled for all OpenPanel users."
   echo ""
