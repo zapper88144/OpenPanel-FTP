@@ -12,7 +12,7 @@ check_openpanel_installed() {
   fi
 }
 
-# Function to run the Docker container
+# run container
 run_docker_container() {
   docker run -d \
     -p "21:21" \
@@ -25,7 +25,7 @@ run_docker_container() {
     openpanel/ftp
 }
 
-# Function to open ports using ufw
+# open ports
 open_ports() {
   ufw allow 21/tcp    -v /home:/home \
     -v /etc/openpanel/ftp/users:/etc/openpanel/ftp/users
@@ -42,7 +42,7 @@ if check_openpanel_installed; then
   # create dir
   mkdir -p /etc/openpanel/ftp/users/
 
-  # run the Docker container
+  # run the container
   run_docker_container
 
   # if container started, we continue..
@@ -61,7 +61,7 @@ if check_openpanel_installed; then
     service panel reload
     
   else
-    # If the container is not running, do B
+    # Oops!
     echo "ERROR: openadmin_ftp container is not running. Exiting..."
     docker stop openadmin_ftp
     docker rm openadmin_ftp
