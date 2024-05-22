@@ -28,9 +28,8 @@ docker run -d \
 
 Run the following command on an OpenPanel server:
 ```bash
-curl -sSL https://raw.githubusercontent.com/stefanpejcic/OpenPanel-FTP/master/setup.sh | bash
+opencli ftp-setup
 ```
-
 
 ## Configuration
 
