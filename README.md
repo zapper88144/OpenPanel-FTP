@@ -47,27 +47,3 @@ To create new FTP accounts:
 ```bash
 opencli ftp-add <NEW_USERNAME> <NEW_PASSWORD> <FOLDER> <OPENPANEL_USERNAME>
 ```
-
-
-
-## Usage
-
-To add ftp account on a s
-
-
-## Configuration
-
-Environment variables:
-- `USERS` - space and `|` separated list (optional, default: `alpineftp|alpineftp`)
-  - format `name1|password1|[folder1][|uid1][|gid1] name2|password2|[folder2][|uid2][|gid2]`
-- `ADDRESS` - external address to which clients can connect for passive ports (optional, should resolve to ftp server ip address)
-- `MIN_PORT` - minimum port number to be used for passive connections (optional, default `21000`)
-- `MAX_PORT` - maximum port number to be used for passive connections (optional, default `21010`)
-
-## USERS examples
-
-- `user|password foo|bar|/home/foo`
-- `user|password|/home/user/dir|10000`
-- `user|password|/home/user/dir|10000|10000`
-- `user|password||10000`
-- `user|password||10000|82` : add to an existing group (www-data)
