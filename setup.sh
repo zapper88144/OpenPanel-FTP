@@ -62,6 +62,7 @@ if check_openpanel_installed; then
   echo "Building docker image.."
   # build image for now, later download from dockerhub
   cd OpenPanel-FTP-master && docker build . -t "openpanel/ftp"
+  cd ..
   
   # chech if image exists
   if docker images | grep -q "openpanel/ftp"; then
