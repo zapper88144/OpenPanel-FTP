@@ -6,7 +6,6 @@
 PANEL_CONFIG="/usr/local/panel/conf/panel.config"
 GIT_URL="https://github.com/stefanpejcic/OpenPanel-FTP/archive/refs/heads/master.zip"
 ETC_DIR="/etc/openpanel/ftp/users/"
-TEMP_DIR="openpanel-ftp"
 
 # OpenPanel?
 check_openpanel_installed() {
@@ -43,7 +42,6 @@ open_ports() {
 #cleanup
 cleanup() {
   rm file.zip
-  rm -rf $TEMP_DIR
 } 
 
 
@@ -54,17 +52,16 @@ if check_openpanel_installed; then
 
   echo "Downloading the latest openpanel/ftp image and module."  
 
-  # create dirs
-  mkdir -p $TEMP_DIR
+  # create dir
   mkdir -p $ETC_DIR
 
   # download from github
   wget $GIT_URL -O file.zip
-  unzip file.zip -d $TEMP_DIR  
+  unzip file.zip  
 
   echo "Building docker image.."
   # build image for now, later download from dockerhub
-  cd $TEMP_DIR && docker build . -t "openpanel/ftp"
+  cd OpenPanel-FTP-master && docker build . -t "openpanel/ftp"
   
   # chech if image exists
   if docker images | grep -q "openpanel/ftp"; then
@@ -86,12 +83,12 @@ if check_openpanel_installed; then
 
     echo "Copying OpenPanel module and OpenAdmin extension files.."
     # OpenPanel module
-    cp $TEMP_DIR/module/ftp.py /usr/local/panel/modules/ftp.py
-    cp $TEMP_DIR/module/ftp.html /usr/local/panel/templates/ftp.html
+    cp module/ftp.py /usr/local/panel/modules/ftp.py
+    cp module/ftp.html /usr/local/panel/templates/ftp.html
   
     # OpenAdmin extension
-    cp $TEMP_DIR/module/admin/ftp.py /usr/local/admin/modules/ftp.py
-    cp $TEMP_DIR/module/admin/ftp.html /usr/local/admin/templates/ftp.html
+    cp module/admin/ftp.py /usr/local/admin/modules/ftp.py
+    cp module/admin/ftp.html /usr/local/admin/templates/ftp.html
   
   # Check if 'ftp' is in the enabled_modules line
   if grep -q "^enabled_modules=.*ftp" "$PANEL_CONFIG"; then
