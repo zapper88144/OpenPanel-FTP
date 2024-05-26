@@ -47,3 +47,13 @@ docker exec -it openadmin_ftp sh -c 'echo -e "${PASSWORD}\n${PASSWORD}" | adduse
 echo "$USERNAME|$PASSWORD|$DIRECTORY" >> /etc/openpanel/ftp/users/users.list
 ```
 
+-----
+
+
+### Todo:
+- quotas
+- limits in ftp accounts per user
+- create groups
+- openpanel interface
+- openadmin interface
+- additional tweaks: ssl protocols, resource limiting..
