@@ -31,11 +31,47 @@ run_docker_container() {
 
 # open ports
 open_ports() {
+
+# Check for CSF
+if command -v csf >/dev/null 2>&1; then
+  function open_port_csf() {
+      local port=$1
+      local csf_conf="/etc/csf/csf.conf"
+      
+      # Check if port is already open
+      port_opened=$(grep "TCP_IN = .*${port}" "$csf_conf")
+      if [ -z "$port_opened" ]; then
+          # Open port
+          sed -i "s/TCP_IN = \"\(.*\)\"/TCP_IN = \"\1,${port}\"/" "$csf_conf"
+          echo "Port ${port} opened in CSF."
+          ports_opened=1
+      else
+          echo "Port ${port} is already open in CSF."
+      fi
+  }
+  
+  open_port_csf 21
+  open_port_csf 21000:21010
+  csf -r
+      
+# Check for UFW
+elif command -v ufw >/dev/null 2>&1; then
+
   ufw allow 21/tcp
   for port in $(seq 21000 21010); do
     ufw allow $port/tcp
   done
   ufw reload
+  
+else
+    echo "Error: Neither CSF nor UFW are detected. If using external firewall make sure to open ports: '21' and '21000:21010'."
+fi
+
+
+
+
+
+
 }
 
 #cleanup
