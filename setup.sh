@@ -3,7 +3,7 @@
 # this script should be run only on servers that have OpenPanel installed.
 # to use OpenPanel-FTP as a standalone ftp server, check the readme
 
-PANEL_CONFIG="/usr/local/panel/conf/panel.config"
+PANEL_CONFIG="/etc/openpanel/openpanel/conf/openpanel.config"
 GIT_URL="https://github.com/stefanpejcic/OpenPanel-FTP/archive/refs/heads/master.zip"
 ETC_DIR="/etc/openpanel/ftp/users/"
 
@@ -105,7 +105,7 @@ if check_openpanel_installed; then
     # reload services
     echo "Reloading OpenPanel and OpenAdmin services to apply changes."
     service admin reload
-    service panel reload
+    docker restart openpanel
     
   else
     # Oops!
