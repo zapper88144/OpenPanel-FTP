@@ -23,7 +23,7 @@ run_docker_container() {
     -p 21000-21010:21000-21010 \
     --restart=always \
     --name=openadmin_ftp \
-    -v /home:/home \
+    --mount type=bind,source=/home,target=/home \
     -v /etc/openpanel/ftp/users:/etc/openpanel/ftp/users \
     --memory="1g" --cpus="1" \
     openpanel/ftp
