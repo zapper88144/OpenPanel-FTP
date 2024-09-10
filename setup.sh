@@ -7,6 +7,8 @@ PANEL_CONFIG="/etc/openpanel/openpanel/conf/openpanel.config"
 GIT_URL="https://github.com/stefanpejcic/OpenPanel-FTP/archive/refs/heads/master.zip"
 ETC_DIR="/etc/openpanel/ftp/users/"
 
+# apt-get install zip -y
+
 # OpenPanel?
 check_openpanel_installed() {
   if [ -f $PANEL_CONFIG ]; then
