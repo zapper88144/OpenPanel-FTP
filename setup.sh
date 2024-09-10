@@ -20,16 +20,19 @@ check_openpanel_installed() {
 
 # run container
 run_docker_container() {
+
+
+
   docker run -d \
     -p "21:21" \
     -p 21000-21010:21000-21010 \
     --restart=always \
     --name=openadmin_ftp \
     --mount type=bind,source=/home,target=/home \
-    -v /etc/openpanel/ftp/users:/etc/openpanel/ftp/users \
     --memory="1g" --cpus="1" \
     openpanel/ftp
 }
+
 
 # open ports
 open_ports() {
